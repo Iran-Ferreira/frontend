@@ -13,7 +13,7 @@
         <form action="">
             <div class="mb-3">
                 <label for="inputEmail" class="form-label">Email address</label>
-                <input type="text" class="form-control" id="inputEmail" placeholder="name@example.com">
+                <input type="email" class="form-control" id="inputEmail" placeholder="name@example.com">
             </div>
             <label for="inputPassword" class="form-label">Password</label>
             <input type="password" id="inputPassword" class="form-control" aria-describedby="passwordHelpBlock">
@@ -28,23 +28,32 @@
 
     <script>
         const buttonCreate = document.querySelector("#create")
-        const inputEmail = document.querySelector("#inputEmail")
-        const inputPassword = document.querySelector("#inputPassword")
-        
-        const dados = {
-            email: inputEmail.value,
-            password: inputPassword.value,
-        }
+
         buttonCreate.addEventListener("click", async function(){
+            const inputEmail = document.querySelector("#inputEmail")
+            const inputPassword = document.querySelector("#inputPassword")
+            
+            const dados = {
+                email: inputEmail.value,
+                password: inputPassword.value,
+            }
+            console.log(dados)
             try{
                 const response = await fetch("http://localhost:3000/users", {
                     method: "POST",
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
                 })
-                //window.location.href = "index.html";
+                if(response.status == 200){
+                    const data = await response.json()
+                    console.log(data)
+                    localStorage.setItem("token", JSON.stringify(data));
+                    window.location.href = "index.html";
+
+                }
                 console.log(await response.json())
             }catch(error){
+                console.log("error")
                 console.log(error)
             }
         })

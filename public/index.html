@@ -41,8 +41,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
                 })
-                window.location.href = "filmes.html";
-                console.log(await response.json())
+                if(response.status == 200){
+                    const data = await response.json()
+                    console.log(data)
+                    localStorage.setItem("token", JSON.stringify(data));
+                    window.location.href = "filmes.html";
+
+                }
             }catch(error){
                 console.log(error)
             }

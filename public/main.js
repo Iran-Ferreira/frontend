@@ -1,48 +1,97 @@
 getDados();
 
 async function cadastrar() {
-    const inputNome = document.querySelector("#inputNome");
-    const inputCategoria = document.querySelector("#inputCategoria");
-    const inputDescricao = document.querySelector("#inputDescricao");
 
-    const dados = {
-        nome: inputNome.value,
-        categoria: inputCategoria.value,
-        descricao: inputDescricao.value,
-    }
-    try {
-        await fetch("http://localhost:3000/videos", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dados)
-        });
-    } catch (error) {
-        alert("Ocorreu um erro")
-        console.log(error)
-    }
+    const cadastro = document.querySelector("#cadastro")
+    cadastro.addEventListener("click", async() =>{
 
-    //Limpar dados
-    inputNome.value = "";
-    inputCategoria.value = "";
-    inputDescricao.value = "";
-    //Fechar janela
-    const m = document.querySelector("#exampleModal");
-    const modal = bootstrap.Modal.getInstance(m);
-    modal.hide();
+        const inputNome = document.querySelector("#inputNome").value
+        const selectCategoria = document.querySelector("#selectCategoria").value
+        const inputDescricao = document.querySelector("#inputDescricao").value
 
-    exibirDados();
+        console.log("selectCategoria:", selectCategoria)
+        console.log("nome:", inputNome)
+        console.log("descricao:", inputDescricao)
+
+        const dados = {
+            name: inputNome,
+            category: selectCategoria,
+            description: inputDescricao,
+        }
+        console.log("dados:", dados); 
+
+        try {
+            const response = await fetch("http://localhost:3000/videos", {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            });
+            console.log(response)
+
+            if(response.ok){
+                document.querySelector("#inputNome").value = ""
+                document.querySelector("#selectCategoria").value = ""
+                document.querySelector("#inputDescricao").value = ""
+                
+                const m = document.querySelector("#exampleModal")
+                const modal = bootstrap.Modal.getInstance(m)
+                modal.hide()
+    
+                exibirDados()
+            }else{
+                console.error("Erro ao cadastrar o vídeo:", response.status, response.statusText);
+                alert("Ocorreu um erro ao cadastrar o vídeo. Por favor, tente novamente.");
+            }
+        } catch (error) {
+            console.error("Erro inesperado:", error);
+            alert("Ocorreu um erro inesperado. Por favor, tente novamente.");
+        }
+    })
+
 }
+
+document.addEventListener("DOMContentLoaded", async function () {
+    const dadosCategorias = await obterDadosCategorias()
+    //console.log("Dados de categorias", dadosCategorias)
+    selecionarCategoria(dadosCategorias);
+});
+
+async function obterDadosCategorias() {
+    try {
+        const resposta = await fetch("http://localhost:3000/categories");
+        const dados = await resposta.json();
+        //console.log("Dados obtidos:", dados)
+        return dados;
+
+    } catch (erro) {
+        console.error("Erro ao obter dados de categorias:", erro)
+    }
+
+} 
+
+async function selecionarCategoria(data){
+    const select = document.querySelector("#selectCategoria")
+    console.log(data)
+
+    if(!Array.isArray(data) || data.length === 0){
+        select.innerHTML = `<option> Não há Categorias </option>`
+
+    }else {
+        const options = data.map(dado => `<option value="${dado.id}">${dado.name}</option>`).join('');
+        select.innerHTML = options
+    }
+}   
 
 async function exibirDados(data) {
     const tbody = document.querySelector("#dadosProdutos");
     console.log(data)
+
     let linhas = "";
-    if (data.length === 0) {
+
+    if (!data || data.length === 0) {
         linhas = `
             <tr>
-                <td colspan="5" style="text-align:center">Não há dados cadastrados</td>
+                <td colspan="5" style="text-align:center">Não há filmes cadastrados</td>
             </tr>
         `;
     } else {
@@ -52,8 +101,8 @@ async function exibirDados(data) {
                     <td>${dado.name}</td>
                     <td>${dado.category.name}</td>
                     <td>${dado.description}</td>
-                    <td><i  class="bi bi-pencil-square" style="cursor: pointer" onclick="${editarDados(dado.id)}"></i></td>
-                    <td><button id="icon-remove" onclick="${removerDados(dado.id)}"><i  class="bi bi-trash" style="cursor: pointer" ></i></button></td>
+                    <td><i  class="bi bi-pencil-square" style="cursor: pointer" onclick="editarDados('${dado.id}')"></i></td>
+                    <td><i  class="bi bi-trash" style="cursor: pointer"  onclick="removerDados('${dado.id}')" ></i></td>
                     </tr>`;
         });
     }
@@ -93,26 +142,25 @@ async function buscarDados() {
 
 
 async function removerDados(index) {
-        /* const iconRemove = document.querySelector("#icon-remove")
-        const modalRemover = new bootstrap.Modal('#modalRemover');
-        modalRemover.show(); */
+    console.log(index)
+    const modalRemover = new bootstrap.Modal('#modalRemover');
+    modalRemover.show(); 
 
-        const btnRemover = document.querySelector("#remover");
-        btnRemover.addEventListener("click", async () => {
-            console.log("remover")
-            const modalRemover = new bootstrap.Modal('#modalRemover');
-            modalRemover.show();
-            try {
-                await fetch("http://localhost:3000/videos/" + index, {
-                    method: "DELETE"
-                });
-                modalRemover.hide();
-                exibirDados();
-            } catch (error) {
-                alert("Ocorreu um erro")
-                console.log(error)
-            }
-        });
+    const btnRemover = document.querySelector("#remover");
+    btnRemover.addEventListener("click", async () => {
+        const modalRemover = new bootstrap.Modal('#modalRemover');
+        modalRemover.show();
+        try {
+            await fetch("http://localhost:3000/videos/" + index, {
+                method: "DELETE"
+            });
+            modalRemover.hide();
+            exibirDados();
+        } catch (error) {
+            alert("Ocorreu um erro")
+            console.log(error)
+        }
+    });
 }
 
 async function editarDados(index) {

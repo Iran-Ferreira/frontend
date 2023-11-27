@@ -1,9 +1,11 @@
+import http from "./helpers/http"
+
 function create() {
     return {
         create: async function(){
             try{
                 console.log("Deu certo")
-                //const { data } = await axios.post("http://localhost:3000/users")
+                //const { data } = await http.post("/users")
                 //console.log(data)
             }catch(error){
                 console.log(error)
@@ -12,4 +14,4 @@ function create() {
     }
 }
 
-window.create = create
+export default create

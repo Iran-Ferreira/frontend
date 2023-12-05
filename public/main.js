@@ -6,17 +6,24 @@ async function cadastrar() {
     cadastro.addEventListener("click", async() =>{
 
         const inputNome = document.querySelector("#inputNome").value
-        const selectCategoria = document.querySelector("#selectCategoria").value
         const inputDescricao = document.querySelector("#inputDescricao").value
+        const selectCategoria = document.querySelector("#selectCategoria").value
+        const inputDuracao = document.querySelector("#inputDuracao").value
 
         console.log("selectCategoria:", selectCategoria)
         console.log("nome:", inputNome)
         console.log("descricao:", inputDescricao)
+        console.log("Duração:", inputDuracao)
 
+        if (!inputNome) {
+            console.error("Nome do vídeo não pode ser vazio");
+            return; // Ou adote a lógica que fizer sentido para o seu aplicativo
+        }
         const dados = {
             name: inputNome,
-            category: selectCategoria,
             description: inputDescricao,
+            category: selectCategoria,
+            duration: inputDuracao
         }
         console.log("dados:", dados); 
 
@@ -26,13 +33,16 @@ async function cadastrar() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(dados)
             });
-            console.log(response)
+
+            const responseBody = await response.text()
+            console.log(responseBody)
 
             if(response.ok){
                 document.querySelector("#inputNome").value = ""
-                document.querySelector("#selectCategoria").value = ""
                 document.querySelector("#inputDescricao").value = ""
-                
+                document.querySelector("#selectCategoria").value = ""
+                document.querySelector("#inputDuracao").value = ""
+
                 const m = document.querySelector("#exampleModal")
                 const modal = bootstrap.Modal.getInstance(m)
                 modal.hide()
@@ -99,8 +109,9 @@ async function exibirDados(data) {
             linhas += `<tr>
                     <td>${index + 1}</td>
                     <td>${dado.name}</td>
-                    <td>${dado.category.name}</td>
                     <td>${dado.description}</td>
+                    <td>${dado.category.name}</td>
+                    <td>${dado.duration}</td>
                     <td><i  class="bi bi-pencil-square" style="cursor: pointer" onclick="editarDados('${dado.id}')"></i></td>
                     <td><i  class="bi bi-trash" style="cursor: pointer"  onclick="removerDados('${dado.id}')" ></i></td>
                     </tr>`;

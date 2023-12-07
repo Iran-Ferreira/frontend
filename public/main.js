@@ -1,3 +1,4 @@
+const baseUrl = "http://localhost:3000"
 getDados();
 
 async function cadastrar() {
@@ -28,9 +29,10 @@ async function cadastrar() {
         console.log("dados:", dados); 
 
         try {
-            const response = await fetch("http://localhost:3000/videos", {
+            const response = await fetch(`${baseUrl}/videos`, {
                 method: "POST",
                 headers: {'Content-Type': 'application/json'},
+                mode: "cors",
                 body: JSON.stringify(dados)
             });
 
@@ -48,6 +50,7 @@ async function cadastrar() {
                 modal.hide()
     
                 exibirDados()
+                getDados()
             }else{
                 console.error("Erro ao cadastrar o vídeo:", response.status, response.statusText);
                 alert("Ocorreu um erro ao cadastrar o vídeo. Por favor, tente novamente.");
@@ -68,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 async function obterDadosCategorias() {
     try {
-        const resposta = await fetch("http://localhost:3000/categories");
+        const resposta = await fetch(`${baseUrl}/categories`);
         const dados = await resposta.json();
         //console.log("Dados obtidos:", dados)
         return dados;
@@ -124,7 +127,7 @@ async function exibirDados(data) {
 
 async function getDados() {
     try {
-        const response = await fetch("http://localhost:3000/videos", {
+        const response = await fetch(`${baseUrl}/videos`, {
             method: "GET"
         });
         const data = await response.json();
@@ -136,24 +139,30 @@ async function getDados() {
 }
 
 async function buscarDados() {
-    const filtro = document.querySelector("#search");
+    const filtro = document.querySelector("#search").value
     try {
-        if (filtro.value == "")
-            getDados();
+        if (filtro == "")
+            getDados()
         else {
-            const response = await fetch("http://localhost:3000/videos" + "/?nome=" + filtro.value);
+            const response = await fetch(`${baseUrl}/videos/?name=${encodeURIComponent(filtro)}`, {
+                method: "GET"
+            });
+            if(!response.ok){
+                throw new Error(`Erro ao buscar dados: ${response.status} - ${response.statusText}`)
+            }
+            console.log("URL da requisição:", `${baseUrl}/videos/?name=${encodeURIComponent(filtro.value)}`);
             const data = await response.json();
             exibirDados(data);
         }
     } catch (error) {
-        alert("Ocorreu um erro")
-        console.log(error)
+        console.error("Erro ao buscar dados:", error)
+        alert("Ocorreu um erro ao buscar os dados. Por favor, tente novamente")
     }
 }
 
 
-async function removerDados(index) {
-    console.log(index)
+async function removerDados(id) {
+    console.log(id)
     const modalRemover = new bootstrap.Modal('#modalRemover');
     modalRemover.show(); 
 
@@ -162,11 +171,12 @@ async function removerDados(index) {
         const modalRemover = new bootstrap.Modal('#modalRemover');
         modalRemover.show();
         try {
-            await fetch("http://localhost:3000/videos/" + index, {
+            await fetch(`${baseUrl}/videos/${id}`, {
                 method: "DELETE"
             });
             modalRemover.hide();
             exibirDados();
+            getDados()
         } catch (error) {
             alert("Ocorreu um erro")
             console.log(error)
@@ -174,26 +184,35 @@ async function removerDados(index) {
     });
 }
 
-async function editarDados(index) {
+async function editarDados(id) {
+
+    const modalEditar = new bootstrap.Modal('#editModal');
+    modalEditar.show();
 
     const editar = document.querySelector("#editar");
     editar.addEventListener("click", async () => {
-        const editNome = document.querySelector("#editNome");
-        const editCategoria = document.querySelector("#editCategoria");
-        const editDescricao = document.querySelector("#editDescricao")
+        const editNome = document.querySelector("#editNome").value
+        const editCategoria = document.querySelector("#editCategoria").value
+        const editDescricao = document.querySelector("#editDescricao").value
+        const editDuracao = document.querySelector("#editDuracao").value
         try {
-            const response = await fetch("http://localhost:3000/videos/" + index);
+            const response = await fetch(`${baseUrl}/videos/${id}`);
             const data = await response.json();
-            editNome.value = data.name;
-            editCategoria.value = data.category.name;
-            editDescricao.value = data.description;
+            const dados = {
+                editNome: data.name,
+                editDescricao: data.description,
+                editCategoria: data.category.name,
+                editDuracao: data.duration
+            }
+            
+
         } catch (error) {
             alert("Ocorreu um erro")
             console.log(error)
         }
     
-        const modalEditar = new bootstrap.Modal('#editModal');
-        modalEditar.show();
+        /* const modalEditar = new bootstrap.Modal('#editModal');
+        modalEditar.show(); */
     
         const dado = {
             nome: editNome.value,
@@ -201,7 +220,7 @@ async function editarDados(index) {
             descricao: editDescricao.value,
         };
         try {
-            await fetch("http://localhost:3000/videos/" + index, {
+            await fetch(`${baseUrl}/videos/${id}`, {
                 method: "PUT",
                 headers: {
                     'Content-Type': 'application/json'

@@ -1,6 +1,6 @@
 # Front-end
 
-Sim. Eu sei. Não funciona mas vai funcionar kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk 
+O Adicionar, excluir e listar está funcionando.
 
 Esse repositorio é o Front-end do meu projeto 
 

@@ -215,9 +215,10 @@ async function editarDados(id) {
         modalEditar.show(); */
     
         const dado = {
-            nome: editNome.value,
-            categoria: editCategoria.value,
-            descricao: editDescricao.value,
+            name: editNome.value,
+            description: editDescricao.value,
+            category: editCategoria.value,
+            duration: editDuracao.value
         };
         try {
             await fetch(`${baseUrl}/videos/${id}`, {
